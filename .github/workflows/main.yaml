@@ -1,5 +1,3 @@
-# Workflow to build mqtt.paho.java library 
-
 name: Java CI
 
 on:
