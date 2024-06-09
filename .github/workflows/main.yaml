@@ -27,6 +27,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           java-package: jdk
+      - uses: gradle/actions/wrapper-validation@v3
       - name: Package with Maven skip tests
         run: mvn -B package --file pom.xml -DskipTests
 
