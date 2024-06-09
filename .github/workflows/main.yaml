@@ -4,7 +4,6 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
 
   workflow_dispatch:
 
@@ -13,13 +12,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # os: [ubuntu-latest, macOS-latest, windows-latest]
-        # java: [ 8.0.192, 8, 11.0.3, 17, 18-ea ]
-        os: [ubuntu-latest]
+        os: [ ubuntu-latest ]
         java: [ 8.0.192 ]
       fail-fast: false
       max-parallel: 4
-    name: Build MQTT Paho Java on JDK ${{ matrix.java }}, ${{ matrix.os }}
+    name: Build
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK ${{ matrix.java }} ${{ matrix.os }}

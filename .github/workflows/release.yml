@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        java: [ 8.0.192 ]
+      fail-fast: false
+      max-parallel: 4
+    name: Build
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK ${{ matrix.java }} ${{ matrix.os }}
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+          java-package: jdk
+      - uses: gradle/actions/wrapper-validation@v3
+      - name: Package with Maven skip tests
+        run: mvn -B package --file pom.xml -DskipTests
+
+      - name: Find Tag
+        id: tagger
+        uses: jimschubert/query-tag-action@v2
+        with:
+          skip-unshallow: 'true'
+          commit-ish: HEAD
+      - name: Check pre-release
+        run: |
+          echo "tag=${{steps.tagger.outputs.tag}}"
+          if [[ ${{ steps.tagger.outputs.tag }} == *alpha* || ${{ steps.tagger.outputs.tag }} == *beta* ]]
+          then
+             prerelease=true
+          else
+             prerelease=false
+          fi
+          echo "PRE_RELEASE=$prerelease" >> $GITHUB_ENV
+          echo "prerelease=$prerelease"
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{steps.tagger.outputs.tag}}
+          generate_release_notes: true
+          prerelease: ${{ env.PRE_RELEASE }}
+          name: ${{steps.tagger.outputs.tag}}
+          files: |
+            ./serviceLibrary/build/outputs/aar/serviceLibrary-release.aar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
